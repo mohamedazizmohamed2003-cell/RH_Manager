@@ -1,133 +1,44 @@
-// frontend/src/components/UserProfile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './UserProfile.css';
 
 const UserProfile = () => {
-  // Données utilisateur simulées
   const [userData, setUserData] = useState({
-    id: 1,
     firstName: 'Jean',
     lastName: 'Dupont',
     email: 'jean.dupont@entreprise.com',
     phone: '+33 1 23 45 67 89',
-    position: 'Développeur Fullstack',
-    department: 'IT',
-    hireDate: '2023-01-15',
-    avatar: null
+    position: 'Développeur',
+    department: 'IT'
   });
 
   const [formData, setFormData] = useState({ ...userData });
-  const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
 
-  // Charger les données utilisateur au montage
-  useEffect(() => {
-    // Simulation de chargement des données
-    setTimeout(() => {
-      setFormData({ ...userData });
-    }, 500);
-  }, []);
-
-  // Gestion des changements dans les champs
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    
-    if (type === 'file') {
-      setFormData(prev => ({
-        ...prev,
-        avatar: files[0]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-
-    // Effacer l'erreur quand l'utilisateur tape
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Validation du formulaire
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Validation prénom
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Le prénom est requis';
-    }
-
-    // Validation nom
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Le nom est requis';
-    }
-
-    // Validation email
-    if (!formData.email) {
-      newErrors.email = 'L\'email est requis';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Format d\'email invalide';
-    }
-
-    // Validation téléphone
-    if (formData.phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(formData.phone)) {
-      newErrors.phone = 'Format de téléphone invalide';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Sauvegarder les modifications
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
     setIsLoading(true);
 
-    try {
-      // Simulation d'appel API
-      console.log('Sauvegarde du profil:', formData);
-      
-      setTimeout(() => {
-        setIsLoading(false);
-        setUserData({ ...formData });
-        setIsEditing(false);
-        setSuccessMessage('Profil mis à jour avec succès !');
-        
-        // Effacer le message après 3 secondes
-        setTimeout(() => setSuccessMessage(''), 3000);
-      }, 1500);
-
-    } catch (error) {
+    // Simulation sauvegarde
+    setTimeout(() => {
+      setUserData({ ...formData });
+      setIsEditing(false);
       setIsLoading(false);
-      setErrors({ submit: 'Erreur lors de la sauvegarde. Veuillez réessayer.' });
-    }
+      alert('Profil mis à jour avec succès !');
+    }, 1000);
   };
 
-  // Annuler les modifications
   const handleCancel = () => {
     setFormData({ ...userData });
-    setErrors({});
     setIsEditing(false);
-  };
-
-  // Afficher l'avatar
-  const getAvatarUrl = () => {
-    if (formData.avatar && typeof formData.avatar === 'object') {
-      return URL.createObjectURL(formData.avatar);
-    }
-    return formData.avatar || '/default-avatar.png';
   };
 
   return (
@@ -137,112 +48,57 @@ const UserProfile = () => {
         <p>Gérez vos informations personnelles</p>
       </div>
 
-      {successMessage && (
-        <div className="success-message">
-          ✅ {successMessage}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="profile-form">
-        {/* Section Photo de profil */}
-        <div className="profile-section">
-          <h3>Photo de profil</h3>
-          <div className="avatar-section">
-            <div className="avatar-preview">
-              <img 
-                src={getAvatarUrl()} 
-                alt="Avatar" 
-                className="avatar-image"
-              />
-            </div>
-            {isEditing && (
-              <div className="avatar-upload">
-                <label htmlFor="avatar" className="upload-label">
-                  📷 Changer la photo
-                </label>
-                <input
-                  type="file"
-                  id="avatar"
-                  name="avatar"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="file-input"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Section Informations personnelles */}
         <div className="profile-section">
           <h3>Informations personnelles</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="firstName" className="form-label">
-                Prénom *
-              </label>
+              <label className="form-label">Prénom</label>
               <input
                 type="text"
-                id="firstName"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={`form-input ${errors.firstName ? 'error' : ''}`}
-                disabled={!isEditing || isLoading}
-                placeholder="Votre prénom"
+                className="form-input"
+                disabled={!isEditing}
               />
-              {errors.firstName && <span className="error-message">{errors.firstName}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastName" className="form-label">
-                Nom *
-              </label>
+              <label className="form-label">Nom</label>
               <input
                 type="text"
-                id="lastName"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={`form-input ${errors.lastName ? 'error' : ''}`}
-                disabled={!isEditing || isLoading}
-                placeholder="Votre nom"
+                className="form-input"
+                disabled={!isEditing}
               />
-              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                Email *
-              </label>
+              <label className="form-label">Email</label>
               <input
                 type="email"
-                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`form-input ${errors.email ? 'error' : ''}`}
-                disabled={!isEditing || isLoading}
-                placeholder="votre@email.com"
+                className="form-input"
+                disabled={!isEditing}
               />
-              {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="phone" className="form-label">
-                Téléphone
-              </label>
+              <label className="form-label">Téléphone</label>
               <input
                 type="tel"
-                id="phone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`form-input ${errors.phone ? 'error' : ''}`}
-                disabled={!isEditing || isLoading}
-                placeholder="+33 1 23 45 67 89"
+                className="form-input"
+                disabled={!isEditing}
               />
-              {errors.phone && <span className="error-message">{errors.phone}</span>}
             </div>
           </div>
         </div>
@@ -252,65 +108,34 @@ const UserProfile = () => {
           <h3>Informations professionnelles</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="position" className="form-label">
-                Poste
-              </label>
+              <label className="form-label">Poste</label>
               <input
                 type="text"
-                id="position"
                 name="position"
                 value={formData.position}
                 onChange={handleChange}
                 className="form-input"
-                disabled={!isEditing || isLoading}
-                placeholder="Votre poste"
+                disabled={!isEditing}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="department" className="form-label">
-                Département
-              </label>
+              <label className="form-label">Département</label>
               <select
-                id="department"
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
                 className="form-input"
-                disabled={!isEditing || isLoading}
+                disabled={!isEditing}
               >
                 <option value="IT">IT</option>
-                <option value="RH">Ressources Humaines</option>
+                <option value="RH">RH</option>
                 <option value="Marketing">Marketing</option>
                 <option value="Ventes">Ventes</option>
-                <option value="Finance">Finance</option>
-                <option value="Production">Production</option>
               </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="hireDate" className="form-label">
-                Date d'embauche
-              </label>
-              <input
-                type="date"
-                id="hireDate"
-                name="hireDate"
-                value={formData.hireDate}
-                onChange={handleChange}
-                className="form-input"
-                disabled={!isEditing || isLoading}
-              />
             </div>
           </div>
         </div>
-
-        {/* Messages d'erreur généraux */}
-        {errors.submit && (
-          <div className="error-message general-error">
-            {errors.submit}
-          </div>
-        )}
 
         {/* Boutons d'action */}
         <div className="form-actions">
@@ -329,20 +154,12 @@ const UserProfile = () => {
                 className="save-button"
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <span className="loading-spinner"></span>
-                    Sauvegarde...
-                  </>
-                ) : (
-                  '💾 Sauvegarder'
-                )}
+                {isLoading ? '💾 Sauvegarde...' : '💾 Sauvegarder'}
               </button>
               <button 
                 type="button" 
                 className="cancel-button"
                 onClick={handleCancel}
-                disabled={isLoading}
               >
                 ❌ Annuler
               </button>
@@ -355,3 +172,298 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
+.user-profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f1f2f6;
+  padding-bottom: 20px;
+}
+
+.profile-header h2 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 2rem;
+}
+
+.profile-header p {
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.profile-section {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 10px;
+  border-left: 4px solid #3498db;
+}
+
+.profile-section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-size: 0.9rem;
+}
+
+.form-input {
+  padding: 12px 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #ecf0f1;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+select.form-input {
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.edit-button, .save-button, .cancel-button {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button {
+  background: #3498db;
+  color: white;
+}
+
+.edit-button:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.save-button {
+  background: #27ae60;
+  color: white;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #229954;
+  transform: translateY(-2px);
+}
+
+.cancel-button {
+  background: #95a5a6;
+  color: white;
+}
+
+.cancel-button:hover {
+  background: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 15px;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@media (max-width: 768px) {
+  .user-profile-container {
+    margin: 15px;
+    padding: 20px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .edit-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .edit-actions button {
+    width: 100%;
+  }
+}
+import React from 'react';
+import UserProfile from '../components/UserProfile';
+import './Profile.css';
+
+const Profile = () => {
+  return (
+    <div className="profile-page">
+      <div className="profile-container">
+        <div className="profile-sidebar">
+          <div className="sidebar-header">
+            <h3>⚙️ Paramètres</h3>
+          </div>
+          <nav className="sidebar-nav">
+            <a href="#profile" className="nav-item active">
+              👤 Mon Profil
+            </a>
+            <a href="#security" className="nav-item">
+              🔒 Sécurité
+            </a>
+            <a href="#notifications" className="nav-item">
+              🔔 Notifications
+            </a>
+          </nav>
+        </div>
+
+        <div className="profile-content">
+          <UserProfile />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.profile-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  min-height: 80vh;
+}
+
+.profile-sidebar {
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  padding: 30px 0;
+}
+
+.sidebar-header {
+  padding: 0 25px 20px;
+  border-bottom: 1px solid #34495e;
+  margin-bottom: 20px;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-item {
+  padding: 15px 25px;
+  color: #bdc3c7;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-item:hover {
+  background: #34495e;
+  color: white;
+  border-left-color: #3498db;
+}
+
+.nav-item.active {
+  background: #34495e;
+  color: white;
+  border-left-color: #3498db;
+  font-weight: 600;
+}
+
+.profile-content {
+  flex: 1;
+  padding: 0;
+  background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    flex-direction: column;
+  }
+  
+  .profile-sidebar {
+    width: 100%;
+    padding: 20px 0;
+  }
+  
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 15px;
+  }
+  
+  .nav-item {
+    padding: 10px 15px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  
+  .nav-item.active {
+    border-left: none;
+    border-bottom-color: #3498db;
+  }
+}
