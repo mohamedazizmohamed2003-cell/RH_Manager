@@ -1,0 +1,357 @@
+// frontend/src/components/UserProfile.jsx
+import React, { useState, useEffect } from 'react';
+import './UserProfile.css';
+
+const UserProfile = () => {
+  // Données utilisateur simulées
+  const [userData, setUserData] = useState({
+    id: 1,
+    firstName: 'Jean',
+    lastName: 'Dupont',
+    email: 'jean.dupont@entreprise.com',
+    phone: '+33 1 23 45 67 89',
+    position: 'Développeur Fullstack',
+    department: 'IT',
+    hireDate: '2023-01-15',
+    avatar: null
+  });
+
+  const [formData, setFormData] = useState({ ...userData });
+  const [errors, setErrors] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Charger les données utilisateur au montage
+  useEffect(() => {
+    // Simulation de chargement des données
+    setTimeout(() => {
+      setFormData({ ...userData });
+    }, 500);
+  }, []);
+
+  // Gestion des changements dans les champs
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    
+    if (type === 'file') {
+      setFormData(prev => ({
+        ...prev,
+        avatar: files[0]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+
+    // Effacer l'erreur quand l'utilisateur tape
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  // Validation du formulaire
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validation prénom
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est requis';
+    }
+
+    // Validation nom
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est requis';
+    }
+
+    // Validation email
+    if (!formData.email) {
+      newErrors.email = 'L\'email est requis';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+
+    // Validation téléphone
+    if (formData.phone && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(formData.phone)) {
+      newErrors.phone = 'Format de téléphone invalide';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Sauvegarder les modifications
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Simulation d'appel API
+      console.log('Sauvegarde du profil:', formData);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        setUserData({ ...formData });
+        setIsEditing(false);
+        setSuccessMessage('Profil mis à jour avec succès !');
+        
+        // Effacer le message après 3 secondes
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }, 1500);
+
+    } catch (error) {
+      setIsLoading(false);
+      setErrors({ submit: 'Erreur lors de la sauvegarde. Veuillez réessayer.' });
+    }
+  };
+
+  // Annuler les modifications
+  const handleCancel = () => {
+    setFormData({ ...userData });
+    setErrors({});
+    setIsEditing(false);
+  };
+
+  // Afficher l'avatar
+  const getAvatarUrl = () => {
+    if (formData.avatar && typeof formData.avatar === 'object') {
+      return URL.createObjectURL(formData.avatar);
+    }
+    return formData.avatar || '/default-avatar.png';
+  };
+
+  return (
+    <div className="user-profile-container">
+      <div className="profile-header">
+        <h2>👤 Mon Profil</h2>
+        <p>Gérez vos informations personnelles</p>
+      </div>
+
+      {successMessage && (
+        <div className="success-message">
+          ✅ {successMessage}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="profile-form">
+        {/* Section Photo de profil */}
+        <div className="profile-section">
+          <h3>Photo de profil</h3>
+          <div className="avatar-section">
+            <div className="avatar-preview">
+              <img 
+                src={getAvatarUrl()} 
+                alt="Avatar" 
+                className="avatar-image"
+              />
+            </div>
+            {isEditing && (
+              <div className="avatar-upload">
+                <label htmlFor="avatar" className="upload-label">
+                  📷 Changer la photo
+                </label>
+                <input
+                  type="file"
+                  id="avatar"
+                  name="avatar"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="file-input"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section Informations personnelles */}
+        <div className="profile-section">
+          <h3>Informations personnelles</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="firstName" className="form-label">
+                Prénom *
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                className={`form-input ${errors.firstName ? 'error' : ''}`}
+                disabled={!isEditing || isLoading}
+                placeholder="Votre prénom"
+              />
+              {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="lastName" className="form-label">
+                Nom *
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                className={`form-input ${errors.lastName ? 'error' : ''}`}
+                disabled={!isEditing || isLoading}
+                placeholder="Votre nom"
+              />
+              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                Email *
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`form-input ${errors.email ? 'error' : ''}`}
+                disabled={!isEditing || isLoading}
+                placeholder="votre@email.com"
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone" className="form-label">
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className={`form-input ${errors.phone ? 'error' : ''}`}
+                disabled={!isEditing || isLoading}
+                placeholder="+33 1 23 45 67 89"
+              />
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Section Informations professionnelles */}
+        <div className="profile-section">
+          <h3>Informations professionnelles</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="position" className="form-label">
+                Poste
+              </label>
+              <input
+                type="text"
+                id="position"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                className="form-input"
+                disabled={!isEditing || isLoading}
+                placeholder="Votre poste"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="department" className="form-label">
+                Département
+              </label>
+              <select
+                id="department"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                className="form-input"
+                disabled={!isEditing || isLoading}
+              >
+                <option value="IT">IT</option>
+                <option value="RH">Ressources Humaines</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Ventes">Ventes</option>
+                <option value="Finance">Finance</option>
+                <option value="Production">Production</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="hireDate" className="form-label">
+                Date d'embauche
+              </label>
+              <input
+                type="date"
+                id="hireDate"
+                name="hireDate"
+                value={formData.hireDate}
+                onChange={handleChange}
+                className="form-input"
+                disabled={!isEditing || isLoading}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Messages d'erreur généraux */}
+        {errors.submit && (
+          <div className="error-message general-error">
+            {errors.submit}
+          </div>
+        )}
+
+        {/* Boutons d'action */}
+        <div className="form-actions">
+          {!isEditing ? (
+            <button 
+              type="button" 
+              className="edit-button"
+              onClick={() => setIsEditing(true)}
+            >
+              ✏️ Modifier le profil
+            </button>
+          ) : (
+            <div className="edit-actions">
+              <button 
+                type="submit" 
+                className="save-button"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Sauvegarde...
+                  </>
+                ) : (
+                  '💾 Sauvegarder'
+                )}
+              </button>
+              <button 
+                type="button" 
+                className="cancel-button"
+                onClick={handleCancel}
+                disabled={isLoading}
+              >
+                ❌ Annuler
+              </button>
+            </div>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default UserProfile;
